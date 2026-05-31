@@ -2114,3 +2114,48 @@
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
+
+/* === 学習ログ: クリック可能な集計カード === */
+.summary-card.clickable {
+  cursor: pointer;
+  transition: transform 0.12s, box-shadow 0.12s, background 0.12s;
+}
+.summary-card.clickable:hover {
+  transform: translateY(-2px);
+  background: rgba(124, 58, 237, 0.12);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.3);
+}
+
+/* === 詳細モーダル: 回答した問題 === */
+.ans-item {
+  padding: 12px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.03);
+  border-left: 3px solid #10b981;
+  margin-bottom: 10px;
+}
+.ans-item.ng { border-left-color: #ef4444; }
+.ans-q { display: flex; gap: 8px; align-items: baseline; font-weight: 600; color: #eee; }
+.ans-q .ans-mark { flex-shrink: 0; }
+.ans-q .ans-date { margin-left: auto; font-size: 0.78em; color: #888; font-weight: 400; white-space: nowrap; }
+.ans-row { display: flex; gap: 10px; margin-top: 6px; font-size: 0.9em; }
+.ans-label { color: #8b94a8; min-width: 92px; }
+.ans-user { color: #cbd; }
+.ans-user.wrong { color: #f87171; text-decoration: line-through; }
+.ans-correct { color: #34d399; font-weight: 600; }
+.ans-exp { margin-top: 8px; font-size: 0.85em; color: #9aa; line-height: 1.5; }
+
+/* === 詳細モーダル: 完了トピック === */
+.comp-item {
+  display: grid;
+  grid-template-columns: 56px 1fr auto;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 6px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+.comp-item:last-child { border-bottom: none; }
+.comp-date { color: #9aa; font-size: 0.85em; white-space: nowrap; }
+.comp-topic { color: #ddd; }
+.comp-range { color: #888; font-size: 0.85em; }
+.comp-score { font-weight: 700; font-variant-numeric: tabular-nums; }

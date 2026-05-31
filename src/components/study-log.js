@@ -21,7 +21,9 @@ export async function renderStudyLog(container) {
   const schedules = await getAll('schedule');
   const materials = await getAll('materials');
   const subjects = await getAll('subjects');
+  const questions = await getAll('questions');
   const matById = new Map(materials.map(m => [m.id, m]));
+  const qById = new Map(questions.map(q => [q.id, q]));
 
   // ---- 集約サマリー ----
   const totalAnswers = testResults.length;
@@ -101,11 +103,11 @@ export async function renderStudyLog(container) {
         <h2 class="section-title">📊 これまでの学習（集計）</h2>
         <div class="summary-grid log-summary">
           <div class="summary-card"><span class="summary-icon">📅</span><span class="summary-value">${studyDays}</span><span class="summary-label">学習日数</span></div>
-          <div class="summary-card"><span class="summary-icon">📝</span><span class="summary-value">${totalAnswers}</span><span class="summary-label">総回答数</span></div>
-          <div class="summary-card"><span class="summary-icon">✅</span><span class="summary-value">${correctRate}%</span><span class="summary-label">総正答率</span></div>
+          <div class="summary-card clickable" data-detail="answers"><span class="summary-icon">📝</span><span class="summary-value">${totalAnswers}</span><span class="summary-label">総回答数 ›</span></div>
+          <div class="summary-card clickable" data-detail="answers"><span class="summary-icon">✅</span><span class="summary-value">${correctRate}%</span><span class="summary-label">総正答率 ›</span></div>
           <div class="summary-card"><span class="summary-icon">⏱️</span><span class="summary-value">${totalMinutes}</span><span class="summary-label">学習時間(分)</span></div>
-          <div class="summary-card"><span class="summary-icon">🏁</span><span class="summary-value">${completedTopics}</span><span class="summary-label">完了トピック</span></div>
-          <div class="summary-card"><span class="summary-icon">🎯</span><span class="summary-value">${avgScore != null ? avgScore + '%' : '—'}</span><span class="summary-label">平均スコア</span></div>
+          <div class="summary-card clickable" data-detail="completed"><span class="summary-icon">🏁</span><span class="summary-value">${completedTopics}</span><span class="summary-label">完了トピック ›</span></div>
+          <div class="summary-card clickable" data-detail="completed"><span class="summary-icon">🎯</span><span class="summary-value">${avgScore != null ? avgScore + '%' : '—'}</span><span class="summary-label">平均スコア ›</span></div>
         </div>
       </section>
 
@@ -183,6 +185,71 @@ export async function renderStudyLog(container) {
         }
       }
       await renderStudyLog(container);
+    });
+  });
+
+  // ---- 集計カードのクリック → 詳細モーダル ----
+  const esc = (s) => String(s ?? '').replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
+
+  function openModal(title, bodyHtml) {
+    const mc = document.getElementById('modal-container');
+    const md = document.getElementById('modal-content');
+    if (!mc || !md) return;
+    md.innerHTML = `
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;gap:12px;">
+        <h3 style="margin:0;">${title}</h3>
+        <button class="btn btn-sm btn-secondary" id="modal-close-x">✕ 閉じる</button>
+      </div>
+      <div style="max-height:62vh;overflow:auto;">${bodyHtml}</div>`;
+    mc.removeAttribute('hidden');
+    const close = () => mc.setAttribute('hidden', '');
+    md.querySelector('#modal-close-x')?.addEventListener('click', close);
+    mc.querySelector('.modal-backdrop')?.addEventListener('click', close);
+  }
+
+  function buildAnswersHtml() {
+    const rows = [...testResults].sort((a, b) => (b.testedAt || '').localeCompare(a.testedAt || ''));
+    if (!rows.length) return '<p class="text-muted">回答した問題はまだありません。</p>';
+    return rows.map(r => {
+      const q = qById.get(r.questionId);
+      const qtext = q ? q.question : '（削除された問題）';
+      const correct = q ? q.correctAnswer : '—';
+      const ok = r.isCorrect;
+      const t = r.testedAt ? new Date(r.testedAt) : null;
+      const dlabel = t && !isNaN(t) ? `${t.getMonth() + 1}/${t.getDate()}` : '';
+      return `
+        <div class="ans-item ${ok ? 'ok' : 'ng'}">
+          <div class="ans-q"><span class="ans-mark">${ok ? '✅' : '❌'}</span><span>${esc(qtext)}</span><span class="ans-date">${dlabel}</span></div>
+          <div class="ans-row"><span class="ans-label">あなたの回答</span><span class="ans-user ${ok ? '' : 'wrong'}">${esc(r.userAnswer)}</span></div>
+          ${ok ? '' : `<div class="ans-row"><span class="ans-label">正解</span><span class="ans-correct">${esc(correct)}</span></div>`}
+          ${q?.explanation ? `<div class="ans-exp">${esc(q.explanation)}</div>` : ''}
+        </div>`;
+    }).join('');
+  }
+
+  function buildCompletedHtml() {
+    const done = schedules.filter(s => s.status === 'completed')
+      .sort((a, b) => (b.completedAt || b.date || '').localeCompare(a.completedAt || a.date || ''));
+    if (!done.length) return '<p class="text-muted">完了したトピックはまだありません。</p>';
+    return done.map(s => {
+      const sc = s.score;
+      const color = sc == null ? '#888' : (sc >= 80 ? '#10b981' : sc >= 60 ? '#f59e0b' : '#ef4444');
+      const d = s.completedAt ? new Date(s.completedAt) : (s.date ? new Date(s.date + 'T00:00:00') : null);
+      const dlabel = d && !isNaN(d) ? `${d.getMonth() + 1}/${d.getDate()}` : '';
+      return `
+        <div class="comp-item">
+          <span class="comp-date">${dlabel}</span>
+          <span class="comp-topic">${esc(s.topic || 'テスト')}${s.pageRange ? ` <span class="comp-range">${esc(s.pageRange)}</span>` : ''}</span>
+          <span class="comp-score" style="color:${color}">${sc != null ? sc + '%' : '完了'}</span>
+        </div>`;
+    }).join('');
+  }
+
+  container.querySelectorAll('.summary-card.clickable').forEach(card => {
+    card.addEventListener('click', () => {
+      const mode = card.dataset.detail;
+      if (mode === 'answers') openModal('📝 回答した問題', buildAnswersHtml());
+      else if (mode === 'completed') openModal('🏁 完了したトピック', buildCompletedHtml());
     });
   });
 
