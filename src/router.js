@@ -105,6 +105,21 @@ export function navigateTo(path) {
 }
 
 /**
+ * 現在のルートを再描画する（データ更新後の反映に使用）
+ */
+export function reloadCurrentRoute() {
+  const path = (currentPath || '/').split('?')[0];
+  const handler = routes.get(path) || routes.get('/404');
+  if (handler && containerEl) {
+    try {
+      handler(containerEl);
+    } catch (err) {
+      console.error(`Route reload error for ${path}:`, err);
+    }
+  }
+}
+
+/**
  * ナビゲーションリンクのアクティブ状態を更新
  * @param {string} path - 現在のパス
  */

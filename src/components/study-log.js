@@ -78,10 +78,12 @@ export async function renderStudyLog(container) {
   }
   for (const s of sessions) {
     const mat = matById.get(s.materialId);
+    const base = mat ? mat.title : (s.materialId ? '教材' : '学習');
+    const hasPages = s.startPage && s.endPage;
     events.push({
-      ts: s.createdAt || (s.date + 'T00:00:00'),
-      icon: '📖',
-      title: (mat ? mat.title : '教材') + ` P.${s.startPage}-${s.endPage}`,
+      ts: s.createdAt || (s.date ? s.date + 'T00:00:00' : ''),
+      icon: s.type === 'timer' ? '⏱️' : '📖',
+      title: hasPages ? `${base} P.${s.startPage}-${s.endPage}` : base,
       detail: `${s.durationMinutes || 0}分${s.notes ? ' / ' + s.notes : ''}`,
       score: null,
       kind: 'session',

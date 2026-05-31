@@ -77,6 +77,14 @@ async function initApp() {
     // スケジューラーを起動
     initScheduler();
 
+    // 学習タイマーのウィジェットを設置（計測中なら復元表示）
+    try {
+      const { mountTimer } = await import('./components/timer-widget.js');
+      mountTimer();
+    } catch (err) {
+      console.warn('Timer widget mount skipped:', err.message);
+    }
+
     // ローディング非表示
     const loadingOverlay = document.getElementById('loading-overlay');
     if (loadingOverlay) loadingOverlay.hidden = true;

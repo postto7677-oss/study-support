@@ -340,6 +340,7 @@ async function loadMaterials() {
             <span class="read-detail">${readPages}/${totalPages}p 読了 ・ テスト ${testCount > 0 ? correctCount + '/' + testCount + '問' : '未受験'}</span>
           </div>
           <div class="material-buttons">
+            <button class="btn btn-sm btn-primary btn-timer" data-id="${material.id}">▶ 計測</button>
             <button class="btn btn-sm btn-secondary btn-record-session" data-id="${material.id}" data-pages="${totalPages}">📝 記録</button>
             ${geminiTag}
           </div>
@@ -355,6 +356,23 @@ async function loadMaterials() {
     btn.addEventListener('click', (e) => {
       e.stopPropagation();
       openSessionModal(btn.dataset.id, parseInt(btn.dataset.pages) || 100);
+    });
+  });
+
+  // 学習タイマー開始
+  grid.querySelectorAll('.btn-timer').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      const { start, isRunning } = await import('../services/study-timer.js');
+      if (isRunning()) {
+        showToast('すでに計測中です（右下のタイマーで停止できます）', 'warning');
+        return;
+      }
+      const mat = materials.find(m => m.id === btn.dataset.id);
+      start(btn.dataset.id, mat?.title || '学習');
+      const { mountTimer } = await import('./timer-widget.js');
+      mountTimer();
+      showToast('⏱ 学習タイマーを開始しました', 'success');
     });
   });
 
