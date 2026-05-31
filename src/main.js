@@ -23,6 +23,16 @@ async function initApp() {
       await renderDashboard(container);
     });
 
+    addRoute('/schedule', async (container) => {
+      const { renderSchedule } = await import('./components/schedule.js');
+      await renderSchedule(container);
+    });
+
+    addRoute('/log', async (container) => {
+      const { renderStudyLog } = await import('./components/study-log.js');
+      await renderStudyLog(container);
+    });
+
     addRoute('/materials', async (container) => {
       const { renderMaterials } = await import('./components/materials.js');
       await renderMaterials(container);

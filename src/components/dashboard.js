@@ -50,6 +50,12 @@ export async function renderDashboard(container) {
   // 今日のスケジュール
   const todaySchedules = schedules.filter(s => s.date === today);
 
+  // 全体進捗の集計
+  const sessions = await getAll('studySessions');
+  const totalMinutes = Math.round(sessions.reduce((a, s) => a + (s.durationMinutes || 0), 0));
+  const totalDays = schedules.length;
+  const pendingCount = schedules.filter(s => s.status !== 'completed' && s.date >= today).length;
+
   // 週間スケジュール（今日から7日分）
   const weekDates = [];
   for (let i = 0; i < 7; i++) {
@@ -69,6 +75,27 @@ export async function renderDashboard(container) {
       </header>
 
       ${countdownHtml}
+
+      ${totalDays > 0 ? `
+      <!-- 全体の学習進捗 -->
+      <section class="card card-glass" style="margin-bottom: 20px;">
+        <h2 class="section-title" style="display:flex;justify-content:space-between;align-items:center;">
+          <span>📈 全体の学習進捗</span>
+          <a href="#/schedule" class="btn btn-sm btn-secondary">全体を見る →</a>
+        </h2>
+        <div class="progress-bar" style="height: 14px;">
+          <div class="progress-fill" style="width:${progressPercent}%; background: linear-gradient(90deg,#7c3aed,#3b82f6);"></div>
+        </div>
+        <div style="display:flex; justify-content:space-between; align-items:baseline; margin-top:8px; flex-wrap:wrap; gap:8px;">
+          <span style="font-size:1.4em; font-weight:700; color:#a78bfa;">${progressPercent}%</span>
+          <span style="color:#888;">完了 ${completedSchedules.length} / 全 ${totalDays} 日 ・ 残り ${pendingCount} 日${overdueCount > 0 ? ` ・ <span style="color:#f59e0b;">遅延 ${overdueCount} 日</span>` : ''}</span>
+        </div>
+        <div style="display:flex; gap:20px; margin-top:14px; flex-wrap:wrap; color:#aaa; font-size:0.9em;">
+          <span>📝 総回答 <strong style="color:#fff;">${testResults.length}</strong></span>
+          <span>⏱️ 学習時間 <strong style="color:#fff;">${totalMinutes}</strong> 分</span>
+          <span>📒 <a href="#/log">学習ログを見る →</a></span>
+        </div>
+      </section>` : ''}
 
       <!-- サマリーカード -->
       <div class="summary-grid">
@@ -122,7 +149,10 @@ export async function renderDashboard(container) {
 
       <!-- 週間スケジュール -->
       <section class="card card-glass" style="margin-bottom: 20px;">
-        <h2 class="section-title">📅 今週のスケジュール</h2>
+        <h2 class="section-title" style="display:flex;justify-content:space-between;align-items:center;">
+          <span>📅 今週のスケジュール</span>
+          <a href="#/schedule" class="btn btn-sm btn-secondary">全日程 →</a>
+        </h2>
         <div class="week-schedule">
           ${weekSchedules.map(({ date, schedules: daySchedules }) => {
             const d = new Date(date + 'T00:00:00');
