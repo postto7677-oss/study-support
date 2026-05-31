@@ -2082,16 +2082,18 @@
 .log-detail { font-size: 0.85em; margin-top: 2px; }
 .log-time { color: #888; font-size: 0.8em; white-space: nowrap; }
 .log-del {
-  background: transparent;
-  border: none;
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  color: #fca5a5;
   cursor: pointer;
   font-size: 0.95em;
-  opacity: 0.45;
-  padding: 4px 6px;
-  border-radius: 6px;
-  transition: opacity 0.15s, background 0.15s;
+  opacity: 1;
+  padding: 6px 10px;
+  border-radius: 8px;
+  line-height: 1;
+  transition: background 0.15s, border-color 0.15s;
 }
-.log-del:hover { opacity: 1; background: rgba(239, 68, 68, 0.18); }
+.log-del:hover { background: rgba(239, 68, 68, 0.3); border-color: rgba(239, 68, 68, 0.7); }
 
 /* === 教材カード: 読了 / 定着 の2軸プログレス === */
 .dual-progress { display: flex; flex-direction: column; gap: 6px; }
