@@ -2070,7 +2070,7 @@
 .log-timeline { display: flex; flex-direction: column; }
 .log-item {
   display: grid;
-  grid-template-columns: 32px 1fr auto;
+  grid-template-columns: 32px 1fr auto auto;
   align-items: center;
   gap: 12px;
   padding: 10px 4px;
@@ -2081,6 +2081,24 @@
 .log-title { color: #eee; font-size: 0.95em; }
 .log-detail { font-size: 0.85em; margin-top: 2px; }
 .log-time { color: #888; font-size: 0.8em; white-space: nowrap; }
+.log-del {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 0.95em;
+  opacity: 0.45;
+  padding: 4px 6px;
+  border-radius: 6px;
+  transition: opacity 0.15s, background 0.15s;
+}
+.log-del:hover { opacity: 1; background: rgba(239, 68, 68, 0.18); }
+
+/* === 教材カード: 読了 / 定着 の2軸プログレス === */
+.dual-progress { display: flex; flex-direction: column; gap: 6px; }
+.dp-row { display: grid; grid-template-columns: 52px 1fr 40px; align-items: center; gap: 8px; }
+.dp-label { font-size: 0.78em; color: #aab; white-space: nowrap; }
+.dp-val { font-size: 0.8em; color: #ccc; text-align: right; font-variant-numeric: tabular-nums; }
+.progress-bar.slim { height: 8px; }
 
 @media (max-width: 600px) {
   .schedule-row { grid-template-columns: 70px 24px 1fr auto; }

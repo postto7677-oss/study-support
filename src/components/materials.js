@@ -258,6 +258,7 @@ async function loadMaterials() {
   const materials = await getAll('materials');
   const subjects = await getAll('subjects');
   const pageTrackings = await getAll('pageTracking');
+  const testResults = await getAll('testResults');
 
   // フィルター適用
   const activeType = document.querySelector('#type-tabs .tab-active')?.dataset.type || 'all';
@@ -289,6 +290,15 @@ async function loadMaterials() {
     const readPages = tracking.filter(t => t.status !== 'unread').length;
     const totalPages = material.totalPages || 0;
     const readPercent = totalPages > 0 ? Math.round((readPages / totalPages) * 100) : 0;
+    // 定着度: この教材のテスト正答率。一度読んだだけ（読了）では上がらず、
+    // テストで正解して初めて上がる＝「読んだ＝完璧」にならないようにする指標。
+    const matTests = testResults.filter(t => t.materialId === material.id);
+    const testCount = matTests.length;
+    const correctCount = matTests.filter(t => t.isCorrect).length;
+    const masteryPercent = testCount > 0 ? Math.round((correctCount / testCount) * 100) : 0;
+    const masteryColor = testCount === 0
+      ? 'rgba(255,255,255,0.15)'
+      : (masteryPercent >= 80 ? '#10b981' : masteryPercent >= 60 ? '#f59e0b' : '#ef4444');
     const typeLabel = material.type === 'exercise' ? '演習問題' : '教材';
     const typeClass = material.type === 'exercise' ? 'type-exercise' : 'type-textbook';
     // ローカル解析の状態を表示（テキスト抽出済み / 章検出 / スキャンPDF警告）
@@ -314,12 +324,20 @@ async function loadMaterials() {
           </div>
         </div>
         <div class="material-card-footer">
-          <div class="progress-bar">
-            <div class="progress-fill" style="width: ${readPercent}%; background: ${subject?.color || '#3b82f6'}"></div>
+          <div class="dual-progress">
+            <div class="dp-row">
+              <span class="dp-label">📖 読了</span>
+              <div class="progress-bar slim"><div class="progress-fill" style="width:${readPercent}%; background:${subject?.color || '#3b82f6'}"></div></div>
+              <span class="dp-val">${readPercent}%</span>
+            </div>
+            <div class="dp-row" title="テストの正答率による定着度。読んだだけでは上がりません。">
+              <span class="dp-label">🎯 定着</span>
+              <div class="progress-bar slim"><div class="progress-fill" style="width:${masteryPercent}%; background:${masteryColor}"></div></div>
+              <span class="dp-val">${testCount > 0 ? masteryPercent + '%' : '未'}</span>
+            </div>
           </div>
           <div class="material-stats">
-            <span class="read-percent">${readPercent}% 学習済み</span>
-            <span class="read-detail">${readPages}/${totalPages}p</span>
+            <span class="read-detail">${readPages}/${totalPages}p 読了 ・ テスト ${testCount > 0 ? correctCount + '/' + testCount + '問' : '未受験'}</span>
           </div>
           <div class="material-buttons">
             <button class="btn btn-sm btn-secondary btn-record-session" data-id="${material.id}" data-pages="${totalPages}">📝 記録</button>

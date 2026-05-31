@@ -5,7 +5,7 @@
  * - 学習活動の時系列ログ
  * @module components/study-log
  */
-import { getAll } from '../db.js';
+import { getAll, get, put, remove, clear } from '../db.js';
 
 const dstr = (d) => {
   const x = new Date(d);
@@ -69,6 +69,8 @@ export async function renderStudyLog(container) {
         title: s.topic || 'テスト',
         detail: (s.pageRange ? s.pageRange + ' / ' : '') + (s.score != null ? `スコア ${s.score}%` : '完了'),
         score: s.score,
+        kind: 'quiz',
+        refId: s.id,
       });
     }
   }
@@ -80,6 +82,8 @@ export async function renderStudyLog(container) {
       title: (mat ? mat.title : '教材') + ` P.${s.startPage}-${s.endPage}`,
       detail: `${s.durationMinutes || 0}分${s.notes ? ' / ' + s.notes : ''}`,
       score: null,
+      kind: 'session',
+      refId: s.id,
     });
   }
   events.sort((a, b) => (b.ts || '').localeCompare(a.ts || ''));
@@ -87,7 +91,10 @@ export async function renderStudyLog(container) {
 
   container.innerHTML = `
     <div class="study-log-page">
-      <header class="page-header"><h1 class="page-title">📒 学習ログ</h1></header>
+      <header class="page-header" style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
+        <h1 class="page-title">📒 学習ログ</h1>
+        <button id="btn-reset-log" class="btn btn-sm btn-danger">🗑 記録をリセット</button>
+      </header>
 
       <!-- 集約サマリー -->
       <section class="card card-glass" style="margin-bottom:20px;">
@@ -131,12 +138,53 @@ export async function renderStudyLog(container) {
                     <div class="log-detail" style="color:${color};">${e.detail}</div>
                   </div>
                   <span class="log-time">${dlabel}</span>
+                  <button class="log-del" title="この記録を削除" data-kind="${e.kind}" data-id="${e.refId}">🗑</button>
                 </div>`;
             }).join('')}
         </div>
       </section>
     </div>
   `;
+
+  // ---- 削除・リセット ----
+  document.getElementById('btn-reset-log')?.addEventListener('click', async () => {
+    if (!confirm('テスト結果・学習セッション・ページ進捗・連続記録をすべて削除します。\n（教材・スケジュール・設定は残ります）\nよろしいですか？')) return;
+    if (!confirm('最終確認：これまでの学習記録を削除します。元に戻せません。')) return;
+    for (const store of ['testResults', 'studySessions', 'pageTracking', 'dailyLog', 'progress']) {
+      try { await clear(store); } catch { /* ignore */ }
+    }
+    // スケジュールの完了状態を未受験(pending)に戻す（計画自体は残す）
+    const all = await getAll('schedule');
+    for (const s of all) {
+      if (s.status === 'completed' || s.score != null || s.completedAt) {
+        await put('schedule', { ...s, status: 'pending', score: null, completedAt: null });
+      }
+    }
+    await renderStudyLog(container);
+  });
+
+  container.querySelectorAll('.log-del').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const kind = btn.dataset.kind;
+      const id = btn.dataset.id;
+      if (!id || !confirm('この記録を削除しますか？')) return;
+      if (kind === 'session') {
+        await remove('studySessions', id);
+      } else if (kind === 'quiz') {
+        const sch = await get('schedule', id);
+        if (sch) {
+          const qids = new Set(sch.questionIds || []);
+          const trs = await getAll('testResults');
+          for (const tr of trs) {
+            if (qids.has(tr.questionId)) await remove('testResults', tr.id);
+          }
+          // この日のテストを未受験に戻す（再受験可能に）
+          await put('schedule', { ...sch, status: 'pending', score: null, completedAt: null });
+        }
+      }
+      await renderStudyLog(container);
+    });
+  });
 
   // ---- グラフ描画 ----
   try {
