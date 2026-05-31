@@ -173,11 +173,15 @@ export async function renderDashboard(container) {
               statusIcon = '❌';
             }
 
-            const topics = daySchedules.map(s => s.topic).filter(Boolean).join(', ');
+            const topicsHtml = daySchedules.map(s => {
+              const t = s.topic || (s.isReview ? '復習' : '');
+              const range = s.pageRange ? ` <span class="week-day-range">${s.pageRange}</span>` : '';
+              return `${t}${range}`;
+            }).filter(t => t.trim()).join('、 ') || '─';
 
             return `<div class="week-day ${isToday ? 'is-today' : ''} ${date < today ? 'is-past' : ''}">
               <span class="week-day-label">${dayLabel}</span>
-              <span class="week-day-topic">${topics || '─'}</span>
+              <span class="week-day-topic">${topicsHtml}</span>
               <span class="week-day-status">${statusIcon}</span>
             </div>`;
           }).join('')}

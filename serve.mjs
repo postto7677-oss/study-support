@@ -49,7 +49,10 @@ const server = http.createServer(async (req, res) => {
       fp = join(ROOT, 'index.html');
       data = await readFile(fp);
     }
-    res.writeHead(200, { 'content-type': MIME[extname(fp).toLowerCase()] || 'application/octet-stream' });
+    res.writeHead(200, {
+      'content-type': MIME[extname(fp).toLowerCase()] || 'application/octet-stream',
+      'cache-control': 'no-store', // ビルド更新が即反映されるようキャッシュさせない
+    });
     res.end(data);
   } catch {
     res.writeHead(404);

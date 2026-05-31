@@ -2086,3 +2086,11 @@
   .schedule-row { grid-template-columns: 70px 24px 1fr auto; }
   .schedule-row .sr-status { display: none; }
 }
+
+/* 週間スケジュールのページ範囲表示 */
+.week-day-range {
+  color: #8b94a8;
+  font-size: 0.85em;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
