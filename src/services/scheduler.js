@@ -72,11 +72,12 @@ export function buildScheduleFromAllocation(allocation, exam) {
   const reviewWeek = totalDays >= 14 ? Math.min(7, Math.max(3, Math.round(totalDays * 0.15))) : 0;
   const layoutLimit = Math.max(1, totalDays - reviewWeek);
 
-  const alloc = (allocation || []).filter(a => a && a.topic && Number(a.studyDays) > 0);
+  // topic があるものは残し、studyDays が欠落/0 でも最低1日として扱う（日程ゼロ落ち防止）
+  const alloc = (allocation || []).filter(a => a && a.topic);
 
   // 学習日数を正規化（学習日:復習日 ≈ 4:1 を想定して学習ユニット数の上限を決める）
   const unitCap = Math.max(1, Math.floor(layoutLimit * 4 / 5));
-  let rawDays = alloc.map(a => Math.max(1, Math.round(Number(a.studyDays))));
+  let rawDays = alloc.map(a => Math.max(1, Math.round(Number(a.studyDays) || 0)));
   const sum = rawDays.reduce((s, d) => s + d, 0) || 1;
   if (sum > unitCap) {
     const scale = unitCap / sum;
