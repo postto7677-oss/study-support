@@ -171,6 +171,16 @@ export async function renderStudyLog(container) {
       const id = btn.dataset.id;
       if (!id || !confirm('この記録を削除しますか？')) return;
       if (kind === 'session') {
+        // セッションが記録したページの学習状態(pageTracking)も巻き戻す → 「読了」に反映
+        const sess = await get('studySessions', id);
+        if (sess && sess.materialId) {
+          const sp = Number(sess.startPage), ep = Number(sess.endPage);
+          if (sp && ep) {
+            for (let p = sp; p <= ep; p++) {
+              try { await remove('pageTracking', `${sess.materialId}_${p}`); } catch { /* ignore */ }
+            }
+          }
+        }
         await remove('studySessions', id);
       } else if (kind === 'quiz') {
         const sch = await get('schedule', id);
