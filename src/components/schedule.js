@@ -3,7 +3,7 @@
  * 全体進捗 + 全日程を月別に一覧表示
  * @module components/schedule
  */
-import { getAll } from '../db.js';
+import { getAll, todayStr } from '../db.js';
 
 /** 1エントリのステータス表示を返す */
 function statusOf(s, today) {
@@ -19,7 +19,7 @@ export async function renderSchedule(container) {
   const schedules = (await getAll('schedule')).sort((a, b) => (a.date || '').localeCompare(b.date || ''));
   const exams = await getAll('exams');
   const exam = exams.length > 0 ? exams[0] : null;
-  const today = new Date().toISOString().split('T')[0];
+  const today = todayStr();
 
   if (schedules.length === 0) {
     container.innerHTML = `

@@ -4,7 +4,7 @@
  * @module services/scheduler
  */
 
-import { put, get, getAll, getAllByIndex, getSetting, generateId } from '../db.js';
+import { put, get, getAll, getAllByIndex, getSetting, generateId, todayStr, toDateStr } from '../db.js';
 import emailjs from '@emailjs/browser';
 
 // ============================================================
@@ -30,7 +30,7 @@ let dailyNotificationSent = false;
 function _offsetDateStr(offsetDays) {
   const d = new Date();
   d.setDate(d.getDate() + offsetDays);
-  return d.toISOString().split('T')[0];
+  return toDateStr(d);
 }
 
 /**
@@ -188,7 +188,7 @@ export function calculateNextReview(correctRate, currentInterval, repetition) {
   // 次回復習日を計算
   const nextDate = new Date();
   nextDate.setDate(nextDate.getDate() + newInterval);
-  const nextReviewDate = nextDate.toISOString().split('T')[0];
+  const nextReviewDate = toDateStr(nextDate);
 
   return {
     interval: newInterval,
@@ -215,7 +215,7 @@ export async function updateReviewSchedule(materialId, subjectId, correctRate) {
       subjectId,
       interval: 1,
       repetition: 0,
-      nextReviewDate: new Date().toISOString().split('T')[0],
+      nextReviewDate: todayStr(),
       lastReviewedAt: null,
       reviewHistory: [],
     };
@@ -248,7 +248,7 @@ export async function updateReviewSchedule(materialId, subjectId, correctRate) {
  */
 export async function getDueReviews() {
   const allProgress = await getAll('progress');
-  const today = new Date().toISOString().split('T')[0];
+  const today = todayStr();
 
   const dueReviews = allProgress.filter(p => {
     if (!p.nextReviewDate) return true;
@@ -440,7 +440,7 @@ export function stopDailyScheduler() {
 async function _checkSchedule() {
   const now = new Date();
   const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-  const today = now.toISOString().split('T')[0];
+  const today = toDateStr(now);
 
   // 日付が変わったら送信済みフラグをリセット
   const lastNotificationDate = await getSetting('lastNotificationDate');

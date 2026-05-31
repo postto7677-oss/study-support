@@ -2,7 +2,7 @@
  * Study Support - ダッシュボード（問題ドリブン型）
  * @module components/dashboard
  */
-import { getAll, getAllByIndex, get, getSetting, calculateStreak } from '../db.js';
+import { getAll, getAllByIndex, get, getSetting, calculateStreak, todayStr, toDateStr } from '../db.js';
 
 /**
  * ダッシュボード画面をレンダリング
@@ -16,7 +16,7 @@ export async function renderDashboard(container) {
   const streak = await calculateStreak();
   const lastAdvice = await getSetting('lastAiAdvice', '');
 
-  const today = new Date().toISOString().split('T')[0];
+  const today = todayStr();
 
   // 試験カウントダウン
   let countdownHtml = '';
@@ -61,7 +61,7 @@ export async function renderDashboard(container) {
   for (let i = 0; i < 7; i++) {
     const d = new Date();
     d.setDate(d.getDate() + i);
-    weekDates.push(d.toISOString().split('T')[0]);
+    weekDates.push(toDateStr(d));
   }
   const weekSchedules = weekDates.map(date => ({
     date,
@@ -210,7 +210,7 @@ export async function renderDashboard(container) {
       const offsetDate = (o) => {
         const d = new Date();
         d.setDate(d.getDate() + o);
-        return d.toISOString().split('T')[0];
+        return toDateStr(d);
       };
 
       // 未完了（遅延含む）を今日から順に詰め直す

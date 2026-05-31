@@ -12,7 +12,7 @@
  * @module services/gemini
  */
 
-import { getSetting } from '../db.js';
+import { getSetting, todayStr } from '../db.js';
 
 // ============================================================
 // 定数
@@ -335,7 +335,7 @@ const ANALYSIS_SCHEMA = {
  * @returns {Promise<Object>}
  */
 export async function analyzeProgress(testDetails, schedule, exam) {
-  const today = new Date().toISOString().split('T')[0];
+  const today = todayStr();
   const daysRemaining = exam?.examDate
     ? Math.ceil((new Date(exam.examDate) - new Date(today)) / (1000 * 60 * 60 * 24))
     : null;

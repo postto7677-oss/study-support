@@ -4,7 +4,7 @@
  * @module services/reading-tracker
  */
 
-import { put, get, getAll, getAllByIndex, generateId } from '../db.js';
+import { put, get, getAll, getAllByIndex, generateId, toDateStr } from '../db.js';
 
 // ============================================================
 // 定数
@@ -120,7 +120,7 @@ export class ReadingTracker {
       endPage,
       durationMinutes,
       notes,
-      date: now.split('T')[0],
+      date: toDateStr(now),
       createdAt: now,
     });
 

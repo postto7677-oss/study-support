@@ -4,7 +4,7 @@
  * @module services/question-generator
  */
 
-import { put, get, getAll, getAllByIndex, remove, generateId } from '../db.js';
+import { put, get, getAll, getAllByIndex, remove, generateId, todayStr } from '../db.js';
 
 // ============================================================
 // 定数
@@ -78,7 +78,7 @@ export function generateQuestionsForMaterial(material, existingQuestions = []) {
       createdAt: new Date().toISOString(),
       interval: 1,
       repetition: 0,
-      nextReviewDate: new Date().toISOString().split('T')[0],
+      nextReviewDate: todayStr(),
     });
   }
 
@@ -119,7 +119,7 @@ export function generateTrueFalse(keyword, context) {
     createdAt: new Date().toISOString(),
     interval: 1,
     repetition: 0,
-    nextReviewDate: new Date().toISOString().split('T')[0],
+    nextReviewDate: todayStr(),
   };
 }
 
@@ -148,7 +148,7 @@ export function generateMultipleChoice(keyword, context, distractors) {
     createdAt: new Date().toISOString(),
     interval: 1,
     repetition: 0,
-    nextReviewDate: new Date().toISOString().split('T')[0],
+    nextReviewDate: todayStr(),
   };
 }
 
@@ -175,7 +175,7 @@ export function generateFillBlank(sentence, keyword) {
     createdAt: new Date().toISOString(),
     interval: 1,
     repetition: 0,
-    nextReviewDate: new Date().toISOString().split('T')[0],
+    nextReviewDate: todayStr(),
   };
 }
 
@@ -226,7 +226,7 @@ export async function getQuestionsForSubject(subjectId) {
  */
 export async function getQuestionsForReview(subjectId) {
   const questions = await getQuestionsForSubject(subjectId);
-  const today = new Date().toISOString().split('T')[0];
+  const today = todayStr();
 
   return questions.filter(q => {
     if (!q.nextReviewDate) return true;
@@ -240,7 +240,7 @@ export async function getQuestionsForReview(subjectId) {
  */
 export async function getDueQuestions() {
   const allQuestions = await getAll('questions');
-  const today = new Date().toISOString().split('T')[0];
+  const today = todayStr();
 
   return allQuestions.filter(q => {
     if (!q.nextReviewDate) return true;

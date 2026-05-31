@@ -2,7 +2,7 @@
  * Study Support - 分析・弱点可視化コンポーネント
  * @module components/analytics
  */
-import { getAll } from '../db.js';
+import { getAll, toDateStr } from '../db.js';
 
 /**
  * 分析画面をレンダリング
@@ -245,7 +245,7 @@ function renderTrendChart(Chart, testResults) {
   // 日別の正答率を計算
   const dailyStats = {};
   for (const result of testResults) {
-    const date = result.testedAt?.split('T')[0];
+    const date = result.testedAt ? toDateStr(result.testedAt) : null;
     if (!date) continue;
     if (!dailyStats[date]) dailyStats[date] = { correct: 0, total: 0 };
     dailyStats[date].total++;

@@ -2,7 +2,7 @@
  * Study Support - テスト画面（スケジュールベース + AI問題生成）
  * @module components/quiz
  */
-import { getAll, getAllByIndex, get, put, generateId, logDailyStudy } from '../db.js';
+import { getAll, getAllByIndex, get, put, generateId, logDailyStudy, todayStr } from '../db.js';
 
 /** @type {'setup'|'active'|'results'} */
 let currentPhase = 'setup';
@@ -180,7 +180,7 @@ async function resolveScheduleText(schedule) {
  * セットアップ画面
  */
 async function renderSetupPhase(container) {
-  const today = new Date().toISOString().split('T')[0];
+  const today = todayStr();
   const schedules = await getAll('schedule');
   const todayPending = schedules.filter(s => s.date === today && s.status === 'pending');
   const materials = await getAll('materials');

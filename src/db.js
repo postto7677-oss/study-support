@@ -266,6 +266,32 @@ export async function initDefaultSubjects() {
 }
 
 // ============================================================
+// 日付ヘルパー（ローカル/JST基準）
+// ============================================================
+
+/**
+ * Date をローカルタイムゾーン基準の YYYY-MM-DD 文字列にする。
+ * toISOString() は UTC基準のため、JST午前に日付が前日へズレる問題を回避する。
+ * @param {Date|string|number} [d=new Date()]
+ * @returns {string}
+ */
+export function toDateStr(d = new Date()) {
+  const x = d instanceof Date ? d : new Date(d);
+  const y = x.getFullYear();
+  const m = String(x.getMonth() + 1).padStart(2, '0');
+  const day = String(x.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
+/**
+ * 今日のローカル日付（YYYY-MM-DD）
+ * @returns {string}
+ */
+export function todayStr() {
+  return toDateStr(new Date());
+}
+
+// ============================================================
 // 日次ログ / ストリーク
 // ============================================================
 
@@ -273,7 +299,7 @@ export async function initDefaultSubjects() {
  * 今日の学習を記録する
  */
 export async function logDailyStudy() {
-  const today = new Date().toISOString().split('T')[0];
+  const today = todayStr();
   const existing = await get('dailyLog', today);
   if (!existing) {
     await put('dailyLog', {
@@ -298,13 +324,13 @@ export async function calculateStreak() {
   // 日付でソート（降順）
   logs.sort((a, b) => b.date.localeCompare(a.date));
   
-  const today = new Date().toISOString().split('T')[0];
+  const today = todayStr();
   let streak = 0;
   let checkDate = new Date(today);
-  
+
   for (const log of logs) {
     const logDate = log.date;
-    const expected = checkDate.toISOString().split('T')[0];
+    const expected = toDateStr(checkDate);
     
     if (logDate === expected) {
       streak++;
