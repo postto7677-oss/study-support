@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <meta name="description" content="Study Support - Google Drive教材連携の学習サポートアプリ。進捗管理・理解度テスト・弱点可視化" />
+  <meta name="theme-color" content="#0a0a1a" />
+  <title>Study Support - 学習サポート</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+</head>
+<body>
+  <!-- App Shell -->
+  <div id="app">
+    <!-- Sidebar Navigation -->
+    <nav id="sidebar" class="sidebar">
+      <div class="sidebar-logo">
+        <span class="logo-icon">📚</span>
+        <span class="logo-text">Study Support</span>
+      </div>
+      <ul class="nav-links">
+        <li>
+          <a href="#/" class="nav-link active" data-page="dashboard" id="nav-dashboard">
+            <span class="nav-icon">🏠</span>
+            <span class="nav-label">ダッシュボード</span>
+          </a>
+        </li>
+        <li>
+          <a href="#/materials" class="nav-link" data-page="materials" id="nav-materials">
+            <span class="nav-icon">📖</span>
+            <span class="nav-label">教材管理</span>
+          </a>
+        </li>
+        <li>
+          <a href="#/quiz" class="nav-link" data-page="quiz" id="nav-quiz">
+            <span class="nav-icon">📝</span>
+            <span class="nav-label">テスト・演習</span>
+          </a>
+        </li>
+        <li>
+          <a href="#/analytics" class="nav-link" data-page="analytics" id="nav-analytics">
+            <span class="nav-icon">📊</span>
+            <span class="nav-label">分析・弱点</span>
+          </a>
+        </li>
+        <li>
+          <a href="#/settings" class="nav-link" data-page="settings" id="nav-settings">
+            <span class="nav-icon">⚙️</span>
+            <span class="nav-label">設定</span>
+          </a>
+        </li>
+      </ul>
+      <div class="sidebar-footer">
+        <div class="streak-badge" id="streak-badge">
+          <span class="streak-icon">🔥</span>
+          <span class="streak-count" id="streak-count">0</span>
+          <span class="streak-label">日連続</span>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Mobile Header -->
+    <header id="mobile-header" class="mobile-header">
+      <button id="menu-toggle" class="menu-toggle" aria-label="メニュー">
+        <span></span><span></span><span></span>
+      </button>
+      <h1 class="mobile-title">Study Support</h1>
+      <div class="mobile-streak" id="mobile-streak">🔥 <span id="mobile-streak-count">0</span></div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main id="main-content" class="main-content">
+      <div id="page-container" class="page-container">
+        <!-- Pages will be rendered here by router -->
+      </div>
+    </main>
+
+    <!-- Overlay for mobile sidebar -->
+    <div id="sidebar-overlay" class="sidebar-overlay"></div>
+  </div>
+
+  <!-- Toast Notifications -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- Modal Container -->
+  <div id="modal-container" class="modal-container" hidden>
+    <div class="modal-backdrop"></div>
+    <div class="modal-content" id="modal-content"></div>
+  </div>
+
+  <!-- Loading Overlay -->
+  <div id="loading-overlay" class="loading-overlay" hidden>
+    <div class="loading-spinner"></div>
+    <p class="loading-text">読み込み中...</p>
+  </div>
+
+  <!-- Google API Scripts (loaded async) -->
+  <script async defer src="https://apis.google.com/js/api.js"></script>
+  <script async defer src="https://accounts.google.com/gsi/client"></script>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
