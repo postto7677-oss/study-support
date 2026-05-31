@@ -176,9 +176,12 @@ async function createSchedule() {
 
   try {
     const { getOrParseContent } = await import('../services/material-manager.js');
-    const { chaptersToText, fallbackChapters } = await import('../services/pdf-parser.js');
+    const { chaptersToText, fallbackChapters, capChapters } = await import('../services/pdf-parser.js');
     const { generateScheduleAllocation } = await import('../services/gemini.js');
     const { buildScheduleFromAllocation } = await import('../services/scheduler.js');
+
+    // 教材が多いほど1冊あたりの章数を絞り、配分出力の肥大化（トークン上限切れ）を防ぐ
+    const perMaterialCap = materials.length >= 8 ? 6 : (materials.length >= 4 ? 8 : 12);
 
     // 各教材のローカル解析結果（目次）を集める。未解析なら自動再解析
     const outlines = [];
@@ -187,9 +190,10 @@ async function createSchedule() {
       setP(`📖 教材を解析中... (${i + 1}/${materials.length}) ${m.title}`);
       const content = await getOrParseContent(m.id);
       const numPages = content?.numPages || m.totalPages || 0;
-      const chapters = content?.chapters?.length
+      const baseChapters = content?.chapters?.length
         ? content.chapters
         : fallbackChapters(numPages, `${m.title.slice(0, 12)} パート`);
+      const chapters = capChapters(baseChapters, perMaterialCap);
       outlines.push({ title: m.title, type: m.type, numPages, chaptersText: chaptersToText(chapters) });
     }
 

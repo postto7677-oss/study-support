@@ -16,8 +16,23 @@ let dbInstance = null;
  */
 export async function getDB() {
   if (dbInstance) return dbInstance;
-  
+
   dbInstance = await openDB(DB_NAME, DB_VERSION, {
+    // 他の（古い）タブが接続を握っていて upgrade できない場合に呼ばれる
+    blocked(currentVersion, blockedVersion) {
+      console.warn(`[DB] アップグレードがブロックされています (現:${currentVersion} → 要求:${blockedVersion})。` +
+        ' このアプリを開いている他のタブを全て閉じてください。');
+    },
+    // 自分の接続が、他タブの新バージョンへの更新を妨げている場合に呼ばれる → 接続を閉じて譲る
+    blocking() {
+      console.warn('[DB] 新しいバージョンへの更新要求を検知。この接続を閉じます。');
+      try { dbInstance && dbInstance.close(); } catch { /* ignore */ }
+      dbInstance = null;
+    },
+    terminated() {
+      console.warn('[DB] DB接続が異常終了しました。');
+      dbInstance = null;
+    },
     upgrade(db, oldVersion, newVersion, transaction) {
       // 教科ストア
       if (!db.objectStoreNames.contains('subjects')) {

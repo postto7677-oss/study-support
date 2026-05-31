@@ -198,6 +198,33 @@ export function chaptersToText(chapters) {
 }
 
 /**
+ * 章が多すぎる場合に、隣接する章をまとめて最大 maxGroups 個に圧縮する。
+ * （教材が多いとスケジュール配分の出力が肥大化しトークン上限で切れるため）
+ * @param {Chapter[]} chapters
+ * @param {number} [maxGroups=10]
+ * @returns {Chapter[]}
+ */
+export function capChapters(chapters, maxGroups = 10) {
+  if (!Array.isArray(chapters) || chapters.length <= maxGroups) return chapters || [];
+  const groupSize = Math.ceil(chapters.length / maxGroups);
+  const merged = [];
+  for (let i = 0; i < chapters.length; i += groupSize) {
+    const group = chapters.slice(i, i + groupSize);
+    const first = group[0];
+    const last = group[group.length - 1];
+    const name = group.length > 1
+      ? `${first.name} 〜 ${last.name}`
+      : first.name;
+    merged.push({
+      name: name.length > 80 ? name.slice(0, 77) + '…' : name,
+      startPage: first.startPage,
+      endPage: last.endPage,
+    });
+  }
+  return merged;
+}
+
+/**
  * しおりが無いPDF用に、ページ数を等分した擬似的な章構成を作る
  * @param {number} numPages
  * @param {string} [titlePrefix='パート']

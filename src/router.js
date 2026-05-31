@@ -61,23 +61,28 @@ function handleRoute() {
     // ページ遷移アニメーション
     containerEl.classList.add('page-exit');
     
-    setTimeout(() => {
+    setTimeout(async () => {
       containerEl.innerHTML = '';
       containerEl.classList.remove('page-exit');
       containerEl.classList.add('page-enter');
-      
+
+      // handler は async の場合があるため await し、非同期例外も捕捉する
       try {
-        handler(containerEl);
+        await handler(containerEl);
       } catch (err) {
         console.error(`Route error for ${path}:`, err);
+        const msg = err?.message || String(err);
+        const stack = (err?.stack || '').slice(0, 600);
         containerEl.innerHTML = `
           <div class="error-page">
             <h2>エラーが発生しました</h2>
-            <p>${err.message}</p>
+            <p>${msg}</p>
+            ${stack ? `<pre style="text-align:left;white-space:pre-wrap;font-size:12px;opacity:0.7;overflow:auto;max-height:240px;">${stack}</pre>` : ''}
+            <button class="btn btn-primary" onclick="location.reload()">再読み込み</button>
           </div>
         `;
       }
-      
+
       // アニメーション完了後クラスを除去
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {

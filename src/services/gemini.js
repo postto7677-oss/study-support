@@ -152,6 +152,10 @@ async function callGemini({ prompt, responseSchema, temperature = 0.5, model, ma
     if (match) {
       try { return JSON.parse(match[1] || match[0]); } catch { /* fallthrough */ }
     }
+    // 途中で切れた（トークン上限）場合はその旨を明示する
+    if (candidate?.finishReason === 'MAX_TOKENS') {
+      throw new Error('Geminiの応答がトークン上限で途中まで（出力が長すぎ）。教材数・章数が多い場合は分割してください。');
+    }
     throw new Error('Geminiの応答をJSONとしてパースできません:\n' + text.substring(0, 300));
   }
 }
@@ -221,7 +225,7 @@ ${materialDetails}`;
     responseSchema: ALLOCATION_SCHEMA,
     temperature: 0.4,
     model: DEFAULT_MODEL,
-    maxOutputTokens: 8192,
+    maxOutputTokens: 32768, // 教材・章が多いと配分配列が長くなるため大きめに
   });
 }
 
